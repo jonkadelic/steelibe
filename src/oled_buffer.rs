@@ -63,6 +63,12 @@ impl OledBuffer {
         self.buffer[i] = state;
     }
 
+    pub fn clear(&mut self) {
+        for i in 0..BUFFER_SIZE {
+            self.buffer[i] = OledPixel::Off;
+        }
+    }
+
     pub fn to_buffer(&self, buffer: &mut [u8; BUFFER_SIZE / 8]) {
         for y in 0..OLED_HEIGHT {
             for x in (0..OLED_WIDTH).step_by(8) {
