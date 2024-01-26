@@ -22,17 +22,35 @@ impl OledPixel {
 
         out
     }
+
+    pub fn set_on(&mut self) {
+        *self = OledPixel::On;
+    }
+
+    pub fn set_off(&mut self) {
+        *self = OledPixel::Off;
+    }
+
+    pub fn is_on(&self) -> bool {
+        *self == OledPixel::On
+    }
+
+    pub fn is_off(&self) -> bool {
+        *self == OledPixel::Off
+    }
 }
 
 #[derive(Clone, Copy)]
 pub struct OledBuffer {
-    buffer: [OledPixel; BUFFER_SIZE]
+    buffer: [OledPixel; BUFFER_SIZE],
+    scissor: Option<(usize, usize, usize, usize)>
 }
 
 impl OledBuffer {
     pub fn new() -> Self {
         Self {
-            buffer: [OledPixel::Off; BUFFER_SIZE]
+            buffer: [OledPixel::Off; BUFFER_SIZE],
+            scissor: None
         }
     }
 
@@ -58,12 +76,34 @@ impl OledBuffer {
         if x >= OLED_WIDTH || y >= OLED_HEIGHT {
             return;
         }
+        if let Some(value) = &self.scissor {
+            if x < value.0 || x >= value.2 || y < value.1 || y >= value.3 {
+                return;
+            }
+        }
 
         let i = y * OLED_WIDTH + x;
         self.buffer[i] = state;
     }
 
+    pub fn set_scissor(&mut self, x: usize, y: usize, width: usize, height: usize) {
+        self.scissor = Some((x, y, x + width, y + height));
+    }
+
+    pub fn clear_scissor(&mut self) {
+        self.scissor = None;
+    }
+
     pub fn clear(&mut self) {
+        if let Some(value) = self.scissor.clone() {
+            for y in value.1..value.3 {
+                for x in value.0..value.2 {
+                    self.set_pixel(x, y, OledPixel::Off);
+                }
+            }
+            return;
+        }
+
         for i in 0..BUFFER_SIZE {
             self.buffer[i] = OledPixel::Off;
         }
