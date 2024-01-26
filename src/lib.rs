@@ -3,6 +3,7 @@ mod oled_buffer;
 
 pub use oled::Oled;
 pub use oled_buffer::OledBuffer;
+pub use oled_buffer::OledPixel;
 
 #[cfg(test)]
 mod tests {
